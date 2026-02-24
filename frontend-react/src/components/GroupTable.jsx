@@ -5,6 +5,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
+import DeleteIcon from '@mui/icons-material/Delete';
 import {
   useReactTable,
   getCoreRowModel,
@@ -92,6 +93,12 @@ export default function GroupTable({
   onAssignDeploymentPermissions,
   isAssignDeploymentPermissionsDisabled,
   disableAssignDeploymentPermissions = false,
+  onDeleteUser,
+  isDeleteUserDisabled,
+  disableDeleteUser = false,
+  onDeleteGroup,
+  isDeleteGroupDisabled,
+  disableDeleteGroup = false,
   onCreateUser,
   disableCreateUser = false,
   onCreateGroup,
@@ -139,9 +146,17 @@ export default function GroupTable({
         aggregatedCell: () => null,
         cell: ({ row }) => {
           const canAssignDeploymentPermissions = typeof onAssignDeploymentPermissions === 'function';
+          const canDeleteUser = typeof onDeleteUser === 'function';
+          const canDeleteGroup = typeof onDeleteGroup === 'function';
           const assignDisabled = disableAssignDeploymentPermissions
             || !row.original?.user_id
             || Boolean(isAssignDeploymentPermissionsDisabled?.(row.original));
+          const deleteUserDisabled = disableDeleteUser
+            || !row.original?.user_id
+            || Boolean(isDeleteUserDisabled?.(row.original));
+          const deleteGroupDisabled = disableDeleteGroup
+            || !row.original?.group_id
+            || Boolean(isDeleteGroupDisabled?.(row.original));
           return (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Tooltip title="Edit user">
@@ -177,6 +192,42 @@ export default function GroupTable({
                   </span>
                 </Tooltip>
               ) : null}
+              {canDeleteUser ? (
+                <Tooltip title="Delete user">
+                  <span>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      aria-label="Delete user"
+                      disabled={deleteUserDisabled}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onDeleteUser?.(row.original);
+                      }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              ) : null}
+              {canDeleteGroup ? (
+                <Tooltip title="Delete group">
+                  <span>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      aria-label="Delete group"
+                      disabled={deleteGroupDisabled}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onDeleteGroup?.(row.original);
+                      }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              ) : null}
             </Box>
           );
         },
@@ -188,8 +239,14 @@ export default function GroupTable({
       BADGE_COLORS.user,
       BADGE_COLORS.effective,
       disableAssignDeploymentPermissions,
+      disableDeleteGroup,
+      disableDeleteUser,
       isAssignDeploymentPermissionsDisabled,
+      isDeleteGroupDisabled,
+      isDeleteUserDisabled,
       onAssignDeploymentPermissions,
+      onDeleteGroup,
+      onDeleteUser,
       onEdit,
     ],
   );

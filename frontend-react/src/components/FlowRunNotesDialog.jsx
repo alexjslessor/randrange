@@ -124,7 +124,8 @@ export default function FlowRunNotesDialog({
             type="submit"
             color="primary"
             variant="contained"
-            disabled={isSavePending || !noteText.trim() || isFailedNoteInvalid}
+            disabled
+            // disabled={isSavePending || !noteText.trim() || isFailedNoteInvalid}
             startIcon={<SaveOutlinedIcon />}
             sx={{
               borderRadius: 999,
@@ -141,7 +142,7 @@ export default function FlowRunNotesDialog({
       }
     >
       <form onSubmit={handleSubmit}>
-        <Box sx={{ display: 'grid', gap: 2 }}>
+        <Box sx={{ display: 'grid', gap: 2, pt: 1 }}>
           <Box
             sx={{
               p: 1.6,

@@ -469,6 +469,14 @@ export default function DashboardPage() {
       }, {}),
     [users]
   );
+  const groupById = useMemo(
+    () =>
+      groups.reduce((acc, group) => {
+        acc[group.id] = group;
+        return acc;
+      }, {}),
+    [groups]
+  );
   const permissionClientIds = useMemo(
     () =>
       Array.from(
@@ -1968,7 +1976,7 @@ export default function DashboardPage() {
               <GroupTable
                 data={permissionMatrixRowsWithDeploymentLabels}
                 onEdit={(row) => {
-                  const user = users.find((u) => u.id === row.user_id);
+                  const user = userById[row.user_id];
                   if (user) handleOpenEditUserDialog(user);
                 }}
                 onAssignDeploymentPermissions={(row) => {
@@ -1981,6 +1989,31 @@ export default function DashboardPage() {
                   return !user || (!isSuperuser && Boolean(user.is_superuser));
                 }}
                 disableAssignDeploymentPermissions={isSubmitting}
+                onDeleteUser={(row) => {
+                  const user = userById[row.user_id];
+                  if (!user) return;
+                  handleOpenDeleteUserDialog(user);
+                }}
+                isDeleteUserDisabled={(row) => {
+                  const user = userById[row.user_id];
+                  return !user || (!isSuperuser && Boolean(user.is_superuser));
+                }}
+                disableDeleteUser={isSubmitting}
+                onDeleteGroup={
+                  isSuperuser
+                    ? (row) => {
+                      if (!row.group_id) return;
+                      const group = groupById[row.group_id];
+                      handleOpenDeleteGroupDialog(
+                        group || {
+                          id: row.group_id,
+                          name: row.group_name || row.group_id,
+                        }
+                      );
+                    }
+                    : undefined
+                }
+                disableDeleteGroup={isSubmitting}
                 onCreateUser={handleOpenCreateUserDialog}
                 disableCreateUser={isSubmitting}
                 onCreateGroup={isSuperuser ? handleOpenCreateGroupDialog : undefined}

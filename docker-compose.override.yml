@@ -1,0 +1,160 @@
+services:
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: qwerty
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+      PGPASSFILE: /pgpass/pgpass
+    ports:
+      - "8085:80"
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
+      - ./pgadmin/pgpass:/pgpass/pgpass:ro
+    restart: always
+
+  postgres: # this is from prefect docs
+    image: postgres:14
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: prefect
+      POSTGRES_PASSWORD: prefect
+      POSTGRES_DB: prefect
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prefect"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: 'no'
+
+  frontend-react:
+    container_name: frontend-react
+    build:
+      context: ./frontend-react
+      dockerfile: Dockerfile-dev
+      args:
+        - VITE_PREFECT_API_URL=http://localhost:4200
+        - VITE_AUTH_USER=http://localhost:8001
+        # - LIFETIME_SECONDS=${LIFETIME_SECONDS}
+        # - TIMEOUT=${TIMEOUT}
+        # - BUCKET_BASE_DIR=${BUCKET_BASE_DIR}
+    ports:
+      - "3002:4000"
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+    volumes:
+      - ./frontend-react:/usr/src/app:z
+      - /tmp/frontend-react/npm-cache:/root/.npm:z
+    command: ["npm", "run", "dev"]
+    restart: "no"
+
+  arch-auth:
+    image: arch-auth
+    container_name: arch-auth
+    build: 
+      context: ./arch-auth
+      dockerfile: Dockerfile-dev
+    volumes:
+      - ./arch-auth:/usr/src/app:z
+    ports:
+      - "8001:8001"
+    environment:
+      - PORT=8001
+      - DATABASE_URL=postgresql+asyncpg://arch_auth:arch_auth@postgres:5432/users
+      - METADATA_DATABASE_URL=postgresql+asyncpg://metadata:metadata@postgres:5432/metadata
+      - PREFECT_API_URL=http://prefect-server:4200/api
+      - SUPERUSER_USERNAME=admin@gmail.com
+      - SUPERUSER_PASSWORD=qwerty12
+      - KC_URL=http://keycloak:8080
+      - KC_REALM=demo-mcp
+      - KC_CLIENT_ID=frontend-react
+      - KC_ADMIN_USERNAME=admin
+      - KC_ADMIN_PASSWORD=admin
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8001 --lifespan on --reload 
+    depends_on:
+      - postgres
+    restart: "no"
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    restart: "no"
+
+  # streamlit-client:
+  #   image: python:3.11-slim
+  #   container_name: streamlit-client
+  #   working_dir: /usr/src/app
+  #   ports:
+  #     - "8501:8501"
+  #   environment:
+  #     - AUTH_SERVICE_URL=http://arch-auth:8001
+  #     - AUTH_CLIENT_ID=frontend-react
+  #     - AUTH_SCOPE=openid profile
+  #     - AUTH_REQUEST_TIMEOUT_SECONDS=10
+  #     - STREAMLIT_APP_LOGIN_ENABLED=${STREAMLIT_APP_LOGIN_ENABLED:-false}
+  #     - STREAMLIT_APP_USERNAME=${STREAMLIT_APP_USERNAME:-}
+  #     - STREAMLIT_APP_PASSWORD=${STREAMLIT_APP_PASSWORD:-}
+  #     - STREAMLIT_APP_PASSWORD_HASH=${STREAMLIT_APP_PASSWORD_HASH:-}
+  #   volumes:
+  #     - ./streamlit-client:/usr/src/app:z
+  #     - /tmp/streamlit-client/pip-cache:/root/.cache/pip:z
+  #   command: >
+  #     sh -c "pip install --no-cache-dir -r requirements.txt &&
+  #     streamlit run app.py --server.address=0.0.0.0 --server.port=8501"
+  #   restart: "no"
+
+  keycloak: # https://www.keycloak.org/server/containers
+    image: quay.io/keycloak/keycloak:26.3.4
+    container_name: keycloak
+    environment:
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
+
+      - KEYCLOAK_REALM=demo-mcp
+      - KEYCLOAK_CLIENT_ID=mcp-secure
+      - KEYCLOAK_SECRET=6UJzbvU6H29BeiiEUx6f4lfqKFzMu9nD
+
+      - KC_HOSTNAME=localhost
+      # - KC_HOSTNAME_STRICT_HTTPS=false
+
+      - KC_DB=postgres
+      # - KC_DB_URL=postgres
+      - KC_DB_URL=jdbc:postgresql://postgres/keycloak
+      - KC_DB_USERNAME=keycloak
+      - KC_DB_PASSWORD=keycloak
+
+      # - KC_HOSTNAME_STRICT_BACKCHANNEL=true
+      - KC_HEALTH_ENABLED=true
+      - KC_METRICS_ENABLED=true
+      - KC_LOG_LEVEL=info
+    volumes:
+      - ./demo-mcp-realm.json:/opt/keycloak/data/import/demo-mcp-realm.json
+      - keycloak_volume:/opt/keycloak/data
+    ports:
+      - 8080:8080
+    depends_on:
+      - postgres
+      - mailhog
+    command: start-dev --http-port=8080 --import-realm --verbose
+    restart: "no"
+
+volumes:
+  pgadmin_data:
+  postgres_data:
+  redis_data:
+  keycloak_volume:

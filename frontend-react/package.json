@@ -1,0 +1,45 @@
+{
+  "name": "core-vite",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build2": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test:coverage": "vitest run --coverage",
+    "test:unit": "vitest --include=@/tests",
+    "test:unit:failures": "vitest --silent --verbose=false --bail=0 --testLocationInResults --detectOpenHandles",
+    "test:unit:failures:cov": "vitest --coverage --silent --verbose=false --bail=0 --testLocationInResults --detectOpenHandles",
+    "test:unit:debug": "vitest --no-cache --runInBand",
+    "test:unit:watch": "vitest --watch"
+  },
+  "dependencies": {
+    "@emotion/react": "^11",
+    "@emotion/styled": "^11",
+    "@mui/icons-material": "^7",
+    "@mui/material": "^7",
+    "@mui/x-data-grid": "^8.8.0",
+    "@tanstack/react-query": "^5.83.0",
+    "@tanstack/react-query-devtools": "^5.83.0",
+    "@tanstack/react-table": "^8.21.3",
+    "axios": "^1.10.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router": "^7",
+    "react-router-dom": "^7"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.2",
+    "@vitest/coverage-v8": "^4.0.18",
+    "jsdom": "^28.1.0",
+    "typescript": "^5",
+    "vite": "^5.4.8",
+    "vitest": "^4.0.18"
+  }
+}

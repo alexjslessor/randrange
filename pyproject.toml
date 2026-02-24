@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "prefect-flows"
+version = "0.1.0"
+description = "Prefect flows project"
+dependencies = [
+    "prefect==3.4.23",
+    "blinker==1.5.0",
+    "setuptools==80.9.0",
+    "pytest==8.4.2",
+    "pydantic==2.12.3",
+    "pydantic-settings==2.11.0",
+    "selenium==4.38.0",
+    "selenium-wire==5.1.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["common*", "auto_one*", "auto_two*"]
+
+[tool.pytest.ini_options]
+addopts = [
+    "-s",
+    "--tb=line"]
+
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
+markers = [
+    "wrapper",
+    "login",
+    "expect_text",
+    "expect_visible",
+    "get_text",
+    "get_text_dashboard",
+    "select_mock",
+    "selenium_har_recorder",
+    "selenium_har_policy",
+    "selenium_email_reporter_live",
+    "selenium_email_reporter_mock"
+]

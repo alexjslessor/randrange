@@ -1,0 +1,20 @@
+export const ADMIN_QUERY_KEYS = {
+  users: ['admin', 'users'],
+  groups: ['admin', 'groups'],
+  permissions: ['admin', 'permissions'],
+  prefectDeployments: ['admin', 'prefect-deployments'],
+  permissionMatrix: ['admin', 'permission-matrix'],
+  permissionMatrixPage: ({
+    pageIndex = 0,
+    pageSize = 25,
+    sortBy = 'group_name',
+    sortDir = 'asc',
+  } = {}) => ['admin', 'permission-matrix', pageIndex, pageSize, sortBy, sortDir],
+  groupResourcePermissions: ['admin', 'group-resource-permissions'],
+  userResourcePermissions: ['admin', 'user-resource-permissions'],
+  groupResourcePermissionsByType: (resourceType = 'all') => ['admin', 'group-resource-permissions', resourceType],
+  userResourcePermissionsByType: (resourceType = 'all') => ['admin', 'user-resource-permissions', resourceType],
+  realms: ['admin', 'realms'],
+  oauthClients: ['admin', 'oauth-clients'],
+  oauthClientsByRealm: (realmId) => ['admin', 'oauth-clients', realmId || 'all'],
+};

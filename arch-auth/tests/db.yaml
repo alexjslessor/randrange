@@ -1,0 +1,291 @@
+- object: realms
+  nickname: realm_default
+  fields:
+    id: "00000000-0000-0000-0000-000000000001"
+    slug: "default"
+    name: "Default Realm"
+    is_active: true
+
+- object: oauth_clients
+  nickname: oauth_client_web
+  fields:
+    id: "00000000-0000-0000-0000-000000000020"
+    realm_id: "00000000-0000-0000-0000-000000000001"
+    client_id: "web-client"
+    client_secret_hash: null
+    is_confidential: false
+    redirect_uris: '["http://localhost:5173/callback"]'
+    scopes: '["openid","profile","read","write"]'
+    is_active: true
+
+- object: permissions
+  fields:
+    id: "00000000-0000-0000-0000-000000000100"
+    realm_id: "00000000-0000-0000-0000-000000000001"
+    client_id: "00000000-0000-0000-0000-000000000020"
+    code: "read"
+    description: "Read-only access"
+
+- object: permissions
+  fields:
+    id: "00000000-0000-0000-0000-000000000101"
+    realm_id: "00000000-0000-0000-0000-000000000001"
+    client_id: "00000000-0000-0000-0000-000000000020"
+    code: "write"
+    description: "Read/write access"
+
+- object: permissions
+  fields:
+    id: "00000000-0000-0000-0000-000000000102"
+    realm_id: "00000000-0000-0000-0000-000000000001"
+    client_id: "00000000-0000-0000-0000-000000000020"
+    code: "deployment:read"
+    description: "Read deployment resources"
+
+- object: permissions
+  fields:
+    id: "00000000-0000-0000-0000-000000000103"
+    realm_id: "00000000-0000-0000-0000-000000000001"
+    client_id: "00000000-0000-0000-0000-000000000020"
+    code: "deployment:run"
+    description: "Run deployment resources"
+
+- object: permissions
+  fields:
+    id: "00000000-0000-0000-0000-000000000104"
+    realm_id: "00000000-0000-0000-0000-000000000001"
+    client_id: "00000000-0000-0000-0000-000000000020"
+    code: "deployment:edit"
+    description: "Edit deployment resources"
+
+- object: permissions
+  fields:
+    id: "00000000-0000-0000-0000-000000000105"
+    realm_id: "00000000-0000-0000-0000-000000000001"
+    client_id: "00000000-0000-0000-0000-000000000020"
+    code: "deployment:delete"
+    description: "Delete deployment resources"
+
+- object: groups
+  nickname: group_superusers
+  fields:
+    id: "00000000-0000-0000-0000-000000000200"
+    realm_id: "00000000-0000-0000-0000-000000000001"
+    name: "superusers"
+    description: "System superusers"
+    is_active: true
+
+- object: groups
+  nickname: group_analysts
+  fields:
+    id: "00000000-0000-0000-0000-000000000201"
+    realm_id: "00000000-0000-0000-0000-000000000001"
+    name: "analysts"
+    description: "Analyst users"
+    is_active: true
+
+- object: users
+  nickname: user_admin
+  fields:
+    id: "00000000-0000-0000-0000-000000000300"
+    username: "admin@example.com"
+    password_hash: null
+    external_id: null
+    auth_provider: "local_password"
+    is_superuser: true
+    is_active: true
+
+- object: users
+  nickname: user_analyst
+  fields:
+    id: "00000000-0000-0000-0000-000000000301"
+    username: "analyst1@example.com"
+    password_hash: null
+    external_id: null
+    auth_provider: "local_password"
+    is_superuser: false
+    is_active: true
+
+- object: users
+  nickname: user_viewer
+  fields:
+    id: "00000000-0000-0000-0000-000000000302"
+    username: "viewer1@example.com"
+    password_hash: null
+    external_id: "entra-viewer-302"
+    auth_provider: "entra_id"
+    is_superuser: false
+    is_active: true
+
+- object: tenant_memberships
+  fields:
+    id: "00000000-0000-0000-0000-000000000350"
+    user_id: "00000000-0000-0000-0000-000000000300"
+    realm_id: "00000000-0000-0000-0000-000000000001"
+    is_active: true
+
+- object: tenant_memberships
+  fields:
+    id: "00000000-0000-0000-0000-000000000351"
+    user_id: "00000000-0000-0000-0000-000000000301"
+    realm_id: "00000000-0000-0000-0000-000000000001"
+    is_active: true
+
+- object: tenant_memberships
+  fields:
+    id: "00000000-0000-0000-0000-000000000352"
+    user_id: "00000000-0000-0000-0000-000000000302"
+    realm_id: "00000000-0000-0000-0000-000000000001"
+    is_active: true
+
+- object: user_group_memberships
+  fields:
+    id: "00000000-0000-0000-0000-000000000360"
+    user_id: "00000000-0000-0000-0000-000000000300"
+    group_id: "00000000-0000-0000-0000-000000000200"
+    is_group_admin: true
+
+- object: user_group_memberships
+  fields:
+    id: "00000000-0000-0000-0000-000000000361"
+    user_id: "00000000-0000-0000-0000-000000000301"
+    group_id: "00000000-0000-0000-0000-000000000201"
+    is_group_admin: true
+
+- object: user_group_memberships
+  fields:
+    id: "00000000-0000-0000-0000-000000000362"
+    user_id: "00000000-0000-0000-0000-000000000302"
+    group_id: "00000000-0000-0000-0000-000000000201"
+    is_group_admin: false
+
+- object: group_permissions
+  fields:
+    id: "00000000-0000-0000-0000-000000000370"
+    group_id: "00000000-0000-0000-0000-000000000200"
+    permission_id: "00000000-0000-0000-0000-000000000100"
+
+- object: group_permissions
+  fields:
+    id: "00000000-0000-0000-0000-000000000371"
+    group_id: "00000000-0000-0000-0000-000000000200"
+    permission_id: "00000000-0000-0000-0000-000000000101"
+
+- object: group_permissions
+  fields:
+    id: "00000000-0000-0000-0000-000000000372"
+    group_id: "00000000-0000-0000-0000-000000000200"
+    permission_id: "00000000-0000-0000-0000-000000000102"
+
+- object: group_permissions
+  fields:
+    id: "00000000-0000-0000-0000-000000000373"
+    group_id: "00000000-0000-0000-0000-000000000200"
+    permission_id: "00000000-0000-0000-0000-000000000103"
+
+- object: group_permissions
+  fields:
+    id: "00000000-0000-0000-0000-000000000374"
+    group_id: "00000000-0000-0000-0000-000000000200"
+    permission_id: "00000000-0000-0000-0000-000000000104"
+
+- object: group_permissions
+  fields:
+    id: "00000000-0000-0000-0000-000000000375"
+    group_id: "00000000-0000-0000-0000-000000000200"
+    permission_id: "00000000-0000-0000-0000-000000000105"
+
+- object: group_permissions
+  fields:
+    id: "00000000-0000-0000-0000-000000000376"
+    group_id: "00000000-0000-0000-0000-000000000201"
+    permission_id: "00000000-0000-0000-0000-000000000102"
+
+- object: group_permissions
+  fields:
+    id: "00000000-0000-0000-0000-000000000377"
+    group_id: "00000000-0000-0000-0000-000000000201"
+    permission_id: "00000000-0000-0000-0000-000000000103"
+
+- object: resources
+  nickname: resource_alpha
+  fields:
+    id: "00000000-0000-0000-0000-000000000400"
+    realm_id: "00000000-0000-0000-0000-000000000001"
+    resource_type: "deployment"
+    external_id: "dep-alpha"
+    name: "Deployment Alpha"
+    is_active: true
+
+- object: resources
+  nickname: resource_beta
+  fields:
+    id: "00000000-0000-0000-0000-000000000401"
+    realm_id: "00000000-0000-0000-0000-000000000001"
+    resource_type: "deployment"
+    external_id: "dep-beta"
+    name: "Deployment Beta"
+    is_active: true
+
+- object: group_resource_permissions
+  fields:
+    id: "00000000-0000-0000-0000-000000000500"
+    group_id: "00000000-0000-0000-0000-000000000201"
+    resource_id: "00000000-0000-0000-0000-000000000400"
+    permission_id: "00000000-0000-0000-0000-000000000102"
+
+- object: group_resource_permissions
+  fields:
+    id: "00000000-0000-0000-0000-000000000501"
+    group_id: "00000000-0000-0000-0000-000000000201"
+    resource_id: "00000000-0000-0000-0000-000000000400"
+    permission_id: "00000000-0000-0000-0000-000000000103"
+
+- object: user_resource_permissions
+  fields:
+    id: "00000000-0000-0000-0000-000000000510"
+    user_id: "00000000-0000-0000-0000-000000000302"
+    resource_id: "00000000-0000-0000-0000-000000000401"
+    permission_id: "00000000-0000-0000-0000-000000000102"
+
+- object: authorization_codes
+  fields:
+    id: "00000000-0000-0000-0000-000000000600"
+    code_hash: "6ad49514e3f7ef01bf2965305a587db4a3067ad7695979dd0ad8307d4fbc1b7f"
+    oauth_client_id: "00000000-0000-0000-0000-000000000020"
+    user_id: "00000000-0000-0000-0000-000000000301"
+    realm_id: "00000000-0000-0000-0000-000000000001"
+    redirect_uri: "http://localhost:5173/callback"
+    scope: "openid profile read"
+    nonce: null
+    code_challenge: "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"
+    code_challenge_method: "S256"
+    expires_at: "2099-01-01T00:00:00+00:00"
+    consumed_at: null
+
+- object: refresh_tokens
+  fields:
+    id: "00000000-0000-0000-0000-000000000700"
+    token_hash: "d6a14ae5f8a2056356f98fcae0ef4f6c0422ebccf464fb59b3027d111748d478"
+    user_id: "00000000-0000-0000-0000-000000000301"
+    oauth_client_id: "00000000-0000-0000-0000-000000000020"
+    realm_id: "00000000-0000-0000-0000-000000000001"
+    scope: "openid profile read"
+    expires_at: "2099-01-08T00:00:00+00:00"
+    revoked_at: null
+
+- object: signing_keys
+  fields:
+    id: "00000000-0000-0000-0000-000000000800"
+    kid: "seed-key-inactive"
+    algorithm: "RS256"
+    private_pem: |
+      -----BEGIN PRIVATE KEY-----
+      SNOWFAKERY_SEED_PLACEHOLDER
+      -----END PRIVATE KEY-----
+    public_pem: |
+      -----BEGIN PUBLIC KEY-----
+      SNOWFAKERY_SEED_PLACEHOLDER
+      -----END PUBLIC KEY-----
+    is_active: false
+    rotated_at: null

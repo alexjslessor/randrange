@@ -1,0 +1,347 @@
+:root {
+  --video-margin-top: 5px;
+  --video-padding-top: 10px;
+
+  --brand-blue: #0075be;
+  --brand-blue-rgb: 0, 117, 190;
+}
+
+::selection {
+  background: rgba(var(--brand-blue-rgb), 0.35);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand-blue);
+  outline-offset: 2px;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  /* background: #080a12; */
+}
+
+#root {
+  min-height: 100vh;
+}
+
+*{
+  /* Line under nav BAR */
+  border-style: none!important;
+}
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+a:hover {
+  /* Optional: Add hover styles if needed */
+  text-decoration: none;
+  color: var(--brand-blue);
+}
+/* https://uiverse.io/devdariill/cuddly-quail-26 */
+/* button {
+  color: #fff;
+  padding: 0.7em 1.7em;
+  font-size: 18px;
+  border-radius: 0.5em;
+  border: 1px solid #212121;
+  background: #212121;
+  transition: all 0.3s;
+  box-shadow: 2px 2px 8px #000, -2px -2px 8px #2f2f2f;
+}
+button:active {
+  color: #666;
+  box-shadow: inset 4px 4px 12px #000, inset -4px -4px 12px #1f1f1f;
+} */
+
+/* Default 16:9 Aspect Ratio */
+.video-wrapper {
+  position: relative;
+  /* position: absolute; */
+  width: 100%;
+  /* padding-top: 56.25%; */
+  padding-top: 1%;
+  /* 16:9 ratio */
+  overflow: hidden;
+  margin: 0; /* Ensure no margin */
+  padding: 0; /* Remove padding */
+  margin-top: 15px;
+}
+
+.video-wrapper>div,
+.video-wrapper video {
+  /* object-fit: contain; */
+  object-fit: contain;
+  position: relative;
+  /* this causing issue */
+  /* position: absolute; */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* 4:3 Aspect Ratio */
+@media (max-width: 1024px) {
+  .video-wrapper {
+    /* padding-top: 100%; */
+    padding-top: var(--video-padding-top);
+    margin-top: var(--video-margin-top);
+    /* 4:3 ratio */
+  }
+}
+
+/* 1:1 Aspect Ratio (Square) */
+@media (max-width: 768px) {
+  .video-wrapper {
+    padding-top: var(--video-padding-top);
+    margin-top: var(--video-margin-top);
+    /* padding-top: 100%; */
+    /* 1:1 ratio */
+  }
+}
+
+/* 21:9 Aspect Ratio (Widescreen) */
+@media (min-aspect-ratio: 21/9) {
+  .video-wrapper {
+    padding-top: var(--video-padding-top);
+    margin-top: var(--video-margin-top);
+    /* padding-top: 42.85%; */
+    /* 21:9 ratio */
+  }
+}
+
+/* 3:2 Aspect Ratio */
+@media (min-aspect-ratio: 3/2) and (max-aspect-ratio: 3/2) {
+  .video-wrapper {
+    /* padding-top: 66.66%; */
+    padding-top: var(--video-padding-top);
+    margin-top: var(--video-margin-top);
+    /* 3:2 ratio */
+  }
+}
+
+/* 9:16 Aspect Ratio (Portrait Mode) */
+@media (max-aspect-ratio: 9/16) {
+  .video-wrapper {
+    padding-top: var(--video-padding-top);
+    margin-top: var(--video-margin-top);
+    /* padding-top: 177.77%; */
+    /* 9:16 ratio */
+  }
+}
+
+/* 2:3 Aspect Ratio */
+@media (max-aspect-ratio: 2/3) {
+  .video-wrapper {
+    /* padding-top: 150%; */
+    padding-top: var(--video-padding-top);
+    margin-top: var(--video-margin-top);
+    /* 2:3 ratio */
+  }
+}
+
+/* 5:4 Aspect Ratio */
+@media (max-aspect-ratio: 5/4) {
+  .video-wrapper {
+    /* padding-top: 80%; */
+    padding-top: var(--video-padding-top);
+    margin-top: var(--video-margin-top);
+    /* 5:4 ratio */
+  }
+}
+
+/* Catch-all for very wide screens */
+@media (min-aspect-ratio: 32/9) {
+  .video-wrapper {
+    padding-top: var(--video-padding-top);
+    margin-top: var(--video-margin-top);
+    /* padding-top: 28.125%; */
+    /* 32:9 ratio */
+  }
+}
+
+
+
+@media (min-width: 3400px) and (max-width: 3500px) and (min-height: 2100px) and (max-height: 2200px) and (aspect-ratio: 16/10) {
+  /* Styles for screens close to 3456x2160 */
+  .video-wrapper {
+    padding-top: var(--video-padding-top);
+    margin-top: var(--video-margin-top);
+  }
+}
+@media (min-width: 3456px) and (min-height: 2160px) and (aspect-ratio: 16/10) {
+  /* Styles for 3456x2160 screens with a 16:10 aspect ratio */
+  .video-wrapper {
+    padding-top: var(--video-padding-top); /* Maintain 16:10 aspect ratio */
+    margin-top: var(--video-margin-top);
+  }
+}
+@media (min-width: 3456px) and (min-height: 2160px) {
+  /* Styles for screens with 3456x2160 resolution */
+  .video-wrapper {
+    padding-top: var(--video-padding-top); /* Adjust aspect ratio if needed */
+    margin-top: var(--video-margin-top);
+  }
+}
+
+
+/* * {
+  margin: 0;
+  box-sizing: border-box;
+} */
+.header__section {
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+  /* background-color: rgb(70, 70, 172); */
+  background: linear-gradient(90deg, rgba(var(--brand-blue-rgb), 0.95), rgba(123, 91, 255, 0.55));
+}
+.header__text {
+  color: white;
+  font-size: 28px;
+  font-weight: 800;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.playerDiv {
+  width:100%;
+  position: relative;
+}
+.controls__div {
+  position:absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  /* align-items: flex-start; */
+  z-index: 2;
+  background: rgba(0,0,0,0.6);
+}
+.controls__nav {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.controls__icons {
+  color: white;
+  font-size: 50;
+  transform:scale(0.9);
+}
+.controls__icons:hover {
+  color: #fff;
+  transform:scale(1);
+}
+.bottom__icons {
+  color:#999;
+}
+.bottom__icons:hover {
+  color:white;
+}
+.volume__slider {
+  width: 100;
+  margin-top: -50px;
+  margin-left: 130px;
+}
+.app-shell {
+  width: 100%;
+  min-height: 100vh;
+  background: radial-gradient(circle at top left, rgba(var(--brand-blue-rgb), 0.20), rgba(26, 32, 48, 0.45) 35%, rgba(8, 9, 16, 0.95));
+  /* background: radial-gradient(circle at top left, rgba(26, 32, 48, 0.5), rgba(8, 9, 16, 0.95)); */
+}
+
+.app-body {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  padding: 24px;
+}
+
+.app-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  /* revert */
+  background: linear-gradient(90deg, rgba(var(--brand-blue-rgb), 0.22), rgba(16, 22, 42, 0.85) 55%, rgba(16, 22, 42, 0.92));
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.app-navbar__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #f5f7ff;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  font-size: 1rem;
+}
+
+.app-navbar__logo-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--brand-blue), #14c8ff 45%, #7b5bff);
+  box-shadow: 0 8px 18px rgba(var(--brand-blue-rgb), 0.32);
+  /* background: linear-gradient(135deg, #14c8ff, #7b5bff); */
+  /* box-shadow: 0 8px 18px rgba(20, 200, 255, 0.28); */
+}
+
+.app-navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-navbar__button {
+  border: none;
+  background: rgba(16, 22, 42, 0.9);
+  color: #e8ecff;
+  text-transform: none;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+
+.app-navbar__button:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, rgba(var(--brand-blue-rgb), 0.18), rgba(123, 91, 255, 0.10));
+  box-shadow: inset 0 0 0 1px rgba(var(--brand-blue-rgb), 0.70), 0 8px 18px rgba(123, 91, 255, 0.22);
+  /* box-shadow: inset 0 0 0 1px rgba(123, 91, 255, 0.7), 0 8px 18px rgba(123, 91, 255, 0.25); */
+}
+
+.app-content {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .app-navbar__logo-text {
+    font-size: 0.95rem;
+  }
+
+  .app-body {
+    padding: 16px;
+  }
+
+  .app-content {
+    min-width: 0;
+  }
+}

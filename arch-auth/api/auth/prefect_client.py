@@ -71,16 +71,26 @@ class PrefectClient:
         self,
         deployment_id: str,
         limit: int = 100,
+        state_type: str | None = None,
     ) -> list[dict]:
+        normalized_state_type = str(state_type or "").strip().upper()
+        flow_runs_filter: dict[str, Any] = {
+            "deployment_id": {
+                "any_": [deployment_id],
+            },
+        }
+        if normalized_state_type:
+            flow_runs_filter["state"] = {
+                "type": {
+                    "any_": [normalized_state_type],
+                },
+            }
+
         data = await self._request(
             "POST",
             "/flow_runs/filter",
             payload={
-                "flow_runs": {
-                    "deployment_id": {
-                        "any_": [deployment_id],
-                    },
-                },
+                "flow_runs": flow_runs_filter,
                 "sort": "EXPECTED_START_TIME_DESC",
                 "limit": limit,
             },

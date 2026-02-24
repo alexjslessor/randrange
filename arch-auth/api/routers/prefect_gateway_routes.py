@@ -270,6 +270,7 @@ async def list_deployment_runs(
     principal: Principal = Depends(get_current_principal),
     db: AsyncSession = Depends(get_db),
     limit: int = Query(default=100, ge=1, le=500),
+    state: str | None = Query(default=None, min_length=1),
 ):
     if not principal.is_superuser:
         allowed_ids = await _get_readable_deployment_ids(db, principal)
@@ -279,6 +280,7 @@ async def list_deployment_runs(
         return await prefect_client.list_deployment_flow_runs(
             deployment_id=deployment_id,
             limit=limit,
+            state_type=state,
         )
     except PrefectProxyError as exc:
         _raise_prefect_error(exc)

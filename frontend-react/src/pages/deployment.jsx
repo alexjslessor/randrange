@@ -6,6 +6,10 @@ import {
   CardContent,
   Chip,
   Container,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
   Tab,
   Tabs,
   Typography,
@@ -31,8 +35,28 @@ const getDeploymentId = (searchParams) => {
   return id?.trim() || '';
 };
 
+// SCHEDULED', 'PENDING', 'RUNNING', 'COMPLETED', 'FAILED', 'CANCELLED', 'CRASHED', 'PAUSED' or 'CANCELLING'\"}}]
+
+const RUN_STATE_OPTIONS = [
+  {
+    label: 'Completed',
+    value: 'COMPLETED',
+  },
+  {
+    label: 'Scheduled',
+    value: 'SCHEDULED',
+  },
+  {
+    label: 'Failed',
+    value: 'FAILED',
+  },
+];
+const DEFAULT_RUN_STATE = RUN_STATE_OPTIONS[0].value;
+const RUNS_LIMIT = 5;
+
 export default function DeploymentPage() {
   const [activeTab, setActiveTab] = useState('details');
+  const [runsStateFilter, setRunsStateFilter] = useState(DEFAULT_RUN_STATE);
   const [isRunDialogOpen, setIsRunDialogOpen] = useState(false);
   const [isFteDialogOpen, setIsFteDialogOpen] = useState(false);
   const [selectedFlowRunForNotes, setSelectedFlowRunForNotes] = useState(null);
@@ -68,8 +92,9 @@ export default function DeploymentPage() {
   } = useDeploymentRuns(
     deploymentId,
     {
-      limit: 120,
-      enabled: Boolean(deploymentId),
+      limit: RUNS_LIMIT,
+      state: runsStateFilter,
+      enabled: Boolean(deploymentId) && activeTab === 'runs',
     },
   );
 
@@ -260,6 +285,25 @@ export default function DeploymentPage() {
 
           {activeTab === 'runs' ? (
             <Box sx={{ mt: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                <FormControl size="small" sx={{ minWidth: 180 }}>
+                  <InputLabel id="deployment-runs-state-filter-label">State</InputLabel>
+                  <Select
+                    labelId="deployment-runs-state-filter-label"
+                    id="deployment-runs-state-filter"
+                    value={runsStateFilter}
+                    label="State"
+                    onChange={(event) => setRunsStateFilter(String(event.target.value || DEFAULT_RUN_STATE))}
+                  >
+                    {RUN_STATE_OPTIONS.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+
               {isRunsLoading ? (
                 <Typography variant="body2" color="text.secondary">
                   Loading runs...

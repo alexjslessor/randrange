@@ -125,6 +125,7 @@ const EMPTY_OAUTH_CLIENT_CREATE_FORM = {
 };
 
 const DEPLOYMENT_RESOURCE_TYPE = 'deployment';
+const EMAIL_USERNAME_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DEFAULT_DEPLOYMENT_PERMISSION_CODES = ['deployment:read', 'deployment:run'];
 const DEPLOYMENT_PERMISSION_OPTIONS = [
   { value: 'deployment:read', label: 'deployment:read' },
@@ -767,13 +768,18 @@ export default function DashboardPage() {
       setActionError('Username, password, and realm are required.');
       return;
     }
+    const normalizedUsername = String(newUserForm.username || '').trim();
+    if (!EMAIL_USERNAME_PATTERN.test(normalizedUsername)) {
+      setActionError('Username must be a valid email address.');
+      return;
+    }
     if (!isSuperuser && !newUserForm.group_id) {
       setActionError('Group admins must select a group.');
       return;
     }
 
     const payload = {
-      username: newUserForm.username,
+      username: normalizedUsername,
       password: newUserForm.password,
       realm_id: selectedCreateUserGroup?.realm_id || newUserForm.realm_id,
       is_superuser: isSuperuser ? newUserForm.is_superuser : false,

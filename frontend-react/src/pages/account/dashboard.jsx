@@ -2385,7 +2385,6 @@ export default function DashboardPage() {
             onClose={handleCloseUserDeploymentPermissionsDialog}
             isSubmitting={isSubmitting}
             user={selectedUserDeploymentPermissionsUser}
-            prefectDeployments={prefectDeployments}
             deploymentLabelById={deploymentLabelById}
             userDeploymentPermissionsMap={userDeploymentPermissionsMap}
             deploymentPermissionOptions={DEPLOYMENT_PERMISSION_OPTIONS}

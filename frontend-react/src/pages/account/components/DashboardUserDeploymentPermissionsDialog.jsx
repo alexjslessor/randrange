@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import BaseDialog from '@/components/BaseDialog';
+import { useDeployments } from '@/hooks/useDeployments';
 import DashboardDialogHeroCard from '@/pages/account/components/DashboardDialogHeroCard';
 
 const CLOSE_BUTTON_SX = {
@@ -47,6 +48,7 @@ const emptyPermissionDialogState = {
   deploymentIds: [],
   permissionCodes: [],
 };
+const DEPLOYMENT_DIALOG_PAGE_SIZE_OPTIONS = [5, 10, 25, 50, 100];
 const createEmptyRowSelectionModel = () => ({
   type: 'include',
   ids: new Set(),
@@ -57,20 +59,11 @@ const normalizePermissionCodes = (permissionCodes) =>
     new Set((Array.isArray(permissionCodes) ? permissionCodes : []).filter(Boolean))
   ).sort();
 
-const areSetsEqual = (leftSet, rightSet) => {
-  if (leftSet.size !== rightSet.size) return false;
-  for (const value of leftSet) {
-    if (!rightSet.has(value)) return false;
-  }
-  return true;
-};
-
 export default function DashboardUserDeploymentPermissionsDialog({
   open,
   onClose,
   isSubmitting,
   user,
-  prefectDeployments,
   deploymentLabelById,
   userDeploymentPermissionsMap,
   deploymentPermissionOptions,
@@ -79,6 +72,7 @@ export default function DashboardUserDeploymentPermissionsDialog({
 }) {
   const [permissionDialogState, setPermissionDialogState] = useState(emptyPermissionDialogState);
   const [rowSelectionModel, setRowSelectionModel] = useState(createEmptyRowSelectionModel);
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 5 });
 
   const selectedUserId = user?.id || '';
   const userAssignments = useMemo(
@@ -86,57 +80,52 @@ export default function DashboardUserDeploymentPermissionsDialog({
     [selectedUserId, userDeploymentPermissionsMap]
   );
 
-  const deploymentRows = useMemo(() => {
-    const deploymentIds = Array.from(
-      new Set([
-        ...(Array.isArray(prefectDeployments)
-          ? prefectDeployments.map((deployment) => String(deployment?.id || '')).filter(Boolean)
-          : []),
-        ...Object.keys(userAssignments || {}),
-      ])
-    );
+  const deploymentFilters = useMemo(
+    () => ({
+      page: paginationModel.page + 1,
+      limit: paginationModel.pageSize,
+      sort: 'NAME_ASC',
+    }),
+    [paginationModel.page, paginationModel.pageSize]
+  );
 
-    deploymentIds.sort((leftId, rightId) => {
-      const leftLabel = String(deploymentLabelById[leftId] || leftId).toLowerCase();
-      const rightLabel = String(deploymentLabelById[rightId] || rightId).toLowerCase();
-      return leftLabel.localeCompare(rightLabel);
-    });
+  const {
+    data: deploymentsPage,
+    isLoading: isDeploymentsPageLoading,
+    isFetching: isDeploymentsPageFetching,
+  } = useDeployments(
+    deploymentFilters,
+    {
+      enabled: open && Boolean(selectedUserId),
+    },
+  );
 
-    return deploymentIds.map((deploymentId) => ({
-      id: deploymentId,
-      deployment_name: deploymentLabelById[deploymentId] || deploymentId,
-      permission_codes: Array.isArray(userAssignments[deploymentId])
-        ? userAssignments[deploymentId]
-        : [],
-    }));
-  }, [deploymentLabelById, prefectDeployments, userAssignments]);
+  const deploymentRows = useMemo(
+    () =>
+      (Array.isArray(deploymentsPage?.results) ? deploymentsPage.results : []).map((deployment) => {
+        const deploymentId = String(deployment?.id || '').trim();
+        return {
+          id: deploymentId,
+          deployment_name: deployment?.name || deploymentLabelById[deploymentId] || deploymentId,
+          permission_codes: Array.isArray(userAssignments[deploymentId])
+            ? userAssignments[deploymentId]
+            : [],
+        };
+      }).filter((row) => Boolean(row.id)),
+    [deploymentLabelById, deploymentsPage?.results, userAssignments]
+  );
+  const deploymentTotalCount = useMemo(
+    () => Number(deploymentsPage?.count) || 0,
+    [deploymentsPage?.count]
+  );
+  const isDeploymentTableLoading = isDeploymentsPageLoading || isDeploymentsPageFetching;
 
   useEffect(() => {
     if (open) return;
     setPermissionDialogState(emptyPermissionDialogState);
     setRowSelectionModel(createEmptyRowSelectionModel());
+    setPaginationModel((prev) => ({ ...prev, page: 0 }));
   }, [open]);
-
-  useEffect(() => {
-    const availableDeploymentIds = new Set(
-      deploymentRows.map((deploymentRow) => String(deploymentRow.id))
-    );
-
-    setRowSelectionModel((prev) => {
-      const nextIds = new Set(
-        Array.from(prev.ids || [])
-          .map((deploymentId) => String(deploymentId))
-          .filter((deploymentId) => availableDeploymentIds.has(deploymentId))
-      );
-      if (areSetsEqual(nextIds, prev.ids || new Set())) {
-        return prev;
-      }
-      return {
-        ...prev,
-        ids: nextIds,
-      };
-    });
-  }, [deploymentRows]);
 
   const selectedDeploymentIds = useMemo(() => {
     if (!rowSelectionModel) return [];
@@ -352,13 +341,22 @@ export default function DashboardUserDeploymentPermissionsDialog({
               rows={deploymentRows}
               columns={deploymentColumns}
               getRowId={(row) => row.id}
+              loading={isDeploymentTableLoading}
               checkboxSelection
               rowSelectionModel={rowSelectionModel}
               onRowSelectionModelChange={(nextRowSelectionModel) => {
                 setRowSelectionModel(nextRowSelectionModel);
               }}
+              keepNonExistentRowsSelected
+              pagination
+              paginationMode="server"
+              rowCount={deploymentTotalCount}
+              pageSizeOptions={DEPLOYMENT_DIALOG_PAGE_SIZE_OPTIONS}
+              paginationModel={paginationModel}
+              onPaginationModelChange={(nextPaginationModel) => {
+                setPaginationModel(nextPaginationModel);
+              }}
               disableRowSelectionOnClick
-              hideFooter
               sx={(theme) => ({
                 ...theme.customStyles.dashboard.dataGrid.grid,
                 '& .MuiDataGrid-cell': {

@@ -44,8 +44,25 @@ const PERMISSION_MENU_PROPS = {
 
 const emptyPermissionDialogState = {
   open: false,
-  deploymentId: '',
+  deploymentIds: [],
   permissionCodes: [],
+};
+const createEmptyRowSelectionModel = () => ({
+  type: 'include',
+  ids: new Set(),
+});
+
+const normalizePermissionCodes = (permissionCodes) =>
+  Array.from(
+    new Set((Array.isArray(permissionCodes) ? permissionCodes : []).filter(Boolean))
+  ).sort();
+
+const areSetsEqual = (leftSet, rightSet) => {
+  if (leftSet.size !== rightSet.size) return false;
+  for (const value of leftSet) {
+    if (!rightSet.has(value)) return false;
+  }
+  return true;
 };
 
 export default function DashboardUserDeploymentPermissionsDialog({
@@ -61,6 +78,7 @@ export default function DashboardUserDeploymentPermissionsDialog({
   onSaveDeploymentPermissions,
 }) {
   const [permissionDialogState, setPermissionDialogState] = useState(emptyPermissionDialogState);
+  const [rowSelectionModel, setRowSelectionModel] = useState(createEmptyRowSelectionModel);
 
   const selectedUserId = user?.id || '';
   const userAssignments = useMemo(
@@ -96,18 +114,75 @@ export default function DashboardUserDeploymentPermissionsDialog({
   useEffect(() => {
     if (open) return;
     setPermissionDialogState(emptyPermissionDialogState);
+    setRowSelectionModel(createEmptyRowSelectionModel());
   }, [open]);
 
-  const handleOpenPermissionDialog = (deploymentId) => {
-    const assignedPermissionCodes = Array.isArray(userAssignments[deploymentId])
-      ? userAssignments[deploymentId]
-      : [];
+  useEffect(() => {
+    const availableDeploymentIds = new Set(
+      deploymentRows.map((deploymentRow) => String(deploymentRow.id))
+    );
+
+    setRowSelectionModel((prev) => {
+      const nextIds = new Set(
+        Array.from(prev.ids || [])
+          .map((deploymentId) => String(deploymentId))
+          .filter((deploymentId) => availableDeploymentIds.has(deploymentId))
+      );
+      if (areSetsEqual(nextIds, prev.ids || new Set())) {
+        return prev;
+      }
+      return {
+        ...prev,
+        ids: nextIds,
+      };
+    });
+  }, [deploymentRows]);
+
+  const selectedDeploymentIds = useMemo(() => {
+    if (!rowSelectionModel) return [];
+    if (rowSelectionModel.type === 'exclude') {
+      const excludedIds = new Set(
+        Array.from(rowSelectionModel.ids || []).map((deploymentId) => String(deploymentId))
+      );
+      return deploymentRows
+        .map((deploymentRow) => String(deploymentRow.id))
+        .filter((deploymentId) => !excludedIds.has(deploymentId));
+    }
+    return Array.from(rowSelectionModel.ids || [])
+      .map((deploymentId) => String(deploymentId))
+      .filter(Boolean);
+  }, [deploymentRows, rowSelectionModel]);
+
+  const handleOpenPermissionDialog = (deploymentIdsOrId) => {
+    const deploymentIds = Array.isArray(deploymentIdsOrId)
+      ? deploymentIdsOrId
+      : [deploymentIdsOrId];
+    const normalizedDeploymentIds = Array.from(
+      new Set(
+        deploymentIds
+          .map((deploymentId) => String(deploymentId || '').trim())
+          .filter(Boolean)
+      )
+    );
+    if (normalizedDeploymentIds.length === 0) return;
+
+    const assignedPermissionCodeSets = normalizedDeploymentIds.map((deploymentId) =>
+      normalizePermissionCodes(userAssignments[deploymentId])
+    );
+    const firstPermissionCodes = assignedPermissionCodeSets[0] || [];
+    const isUniformAssignment = assignedPermissionCodeSets.every(
+      (permissionCodes) => permissionCodes.join('|') === firstPermissionCodes.join('|')
+    );
+    const hasExistingAssignments = assignedPermissionCodeSets.some(
+      (permissionCodes) => permissionCodes.length > 0
+    );
+
     setPermissionDialogState({
       open: true,
-      deploymentId,
-      permissionCodes: assignedPermissionCodes.length
-        ? [...assignedPermissionCodes]
-        : [...defaultDeploymentPermissionCodes],
+      deploymentIds: normalizedDeploymentIds,
+      permissionCodes: isUniformAssignment && hasExistingAssignments
+        ? firstPermissionCodes
+        : normalizePermissionCodes(defaultDeploymentPermissionCodes),
     });
   };
 
@@ -117,16 +192,34 @@ export default function DashboardUserDeploymentPermissionsDialog({
   };
 
   const handleSavePermissions = async () => {
-    if (!selectedUserId || !permissionDialogState.deploymentId) return;
+    if (!selectedUserId || permissionDialogState.deploymentIds.length === 0) return;
     const shouldClose = await onSaveDeploymentPermissions?.({
       userId: selectedUserId,
-      deploymentId: permissionDialogState.deploymentId,
+      deploymentId: permissionDialogState.deploymentIds[0] || '',
+      deploymentIds: permissionDialogState.deploymentIds,
       permissionCodes: permissionDialogState.permissionCodes,
     });
     if (shouldClose !== false) {
       setPermissionDialogState(emptyPermissionDialogState);
     }
   };
+
+  const permissionDialogDeploymentLabels = useMemo(() => {
+    const deploymentIds = Array.isArray(permissionDialogState.deploymentIds)
+      ? permissionDialogState.deploymentIds
+      : [];
+    return deploymentIds.map((deploymentId) =>
+      deploymentLabelById[deploymentId] || deploymentId
+    );
+  }, [deploymentLabelById, permissionDialogState.deploymentIds]);
+
+  const permissionDialogSubtitle = useMemo(() => {
+    if (permissionDialogDeploymentLabels.length === 0) return '';
+    if (permissionDialogDeploymentLabels.length === 1) {
+      return permissionDialogDeploymentLabels[0];
+    }
+    return `${permissionDialogDeploymentLabels.length} deployments selected`;
+  }, [permissionDialogDeploymentLabels]);
 
   const deploymentColumns = useMemo(
     () => [
@@ -211,7 +304,7 @@ export default function DashboardUserDeploymentPermissionsDialog({
           <DashboardDialogHeroCard
             overline="User Access"
             title={user?.username || 'User'}
-            description="Each deployment row shows current permissions. Use Assign to add or replace permissions."
+            description="Use the table checkboxes to select deployments, then bulk-assign permissions to all selected rows."
           >
             <Typography variant="caption" color="text.secondary">
               Realm: {user?.realm_id || 'n/a'}
@@ -220,6 +313,26 @@ export default function DashboardUserDeploymentPermissionsDialog({
               User ID: {selectedUserId || 'n/a'}
             </Typography>
           </DashboardDialogHeroCard>
+
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1}
+            sx={{ justifyContent: 'space-between', alignItems: { sm: 'center' } }}
+          >
+            <Typography variant="body2" color="text.secondary">
+              Selected deployments: {selectedDeploymentIds.length}
+            </Typography>
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<PlaylistAddCheckCircleOutlinedIcon />}
+              disabled={isSubmitting || selectedDeploymentIds.length === 0}
+              onClick={() => handleOpenPermissionDialog(selectedDeploymentIds)}
+              sx={(theme) => theme.customStyles.dashboard.dialog.accentSubmitButton}
+            >
+              Assign Permissions to Selected
+            </Button>
+          </Stack>
 
           <Card
             variant="outlined"
@@ -233,6 +346,11 @@ export default function DashboardUserDeploymentPermissionsDialog({
               rows={deploymentRows}
               columns={deploymentColumns}
               getRowId={(row) => row.id}
+              checkboxSelection
+              rowSelectionModel={rowSelectionModel}
+              onRowSelectionModelChange={(nextRowSelectionModel) => {
+                setRowSelectionModel(nextRowSelectionModel);
+              }}
               disableRowSelectionOnClick
               hideFooter
               sx={(theme) => ({
@@ -256,7 +374,7 @@ export default function DashboardUserDeploymentPermissionsDialog({
         maxWidth="sm"
         icon={TuneOutlinedIcon}
         title="Select Permissions"
-        subtitle={deploymentLabelById[permissionDialogState.deploymentId] || permissionDialogState.deploymentId}
+        subtitle={permissionDialogSubtitle}
         actions={(
           <>
             <Button
@@ -271,7 +389,7 @@ export default function DashboardUserDeploymentPermissionsDialog({
             <Button
               variant="contained"
               onClick={handleSavePermissions}
-              disabled={isSubmitting || !permissionDialogState.deploymentId}
+              disabled={isSubmitting || permissionDialogState.deploymentIds.length === 0}
               sx={(theme) => theme.customStyles.dashboard.dialog.accentSubmitButton}
             >
               Save Permissions
@@ -307,6 +425,26 @@ export default function DashboardUserDeploymentPermissionsDialog({
               ))}
             </Select>
           </FormControl>
+          {permissionDialogState.deploymentIds.length > 1 ? (
+            <Box
+              sx={{
+                border: '1px solid rgba(255,255,255,0.14)',
+                borderRadius: 1.5,
+                px: 1.2,
+                py: 0.9,
+                backgroundColor: 'rgba(255,255,255,0.03)',
+              }}
+            >
+              <Typography variant="caption" color="text.secondary">
+                Applying to {permissionDialogState.deploymentIds.length} deployments:
+                {' '}
+                {permissionDialogDeploymentLabels.slice(0, 4).join(', ')}
+                {permissionDialogDeploymentLabels.length > 4
+                  ? ` (+${permissionDialogDeploymentLabels.length - 4} more)`
+                  : ''}
+              </Typography>
+            </Box>
+          ) : null}
           <Box
             sx={{
               border: '1px solid rgba(255,255,255,0.14)',
@@ -317,7 +455,7 @@ export default function DashboardUserDeploymentPermissionsDialog({
             }}
           >
             <Typography variant="caption" color="text.secondary">
-              Select one or more permissions. Leave empty and save to remove all permissions for this deployment.
+              Select one or more permissions. Leave empty and save to remove all permissions for the selected deployment(s).
             </Typography>
           </Box>
         </Stack>

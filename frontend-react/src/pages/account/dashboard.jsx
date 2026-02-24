@@ -1217,47 +1217,80 @@ export default function DashboardPage() {
   const handleSaveUserDeploymentPermissionsForDeployment = async ({
     userId,
     deploymentId,
+    deploymentIds,
     permissionCodes,
   }) => {
-    if (!userId || !deploymentId) {
-      setActionError('User and deployment are required.');
+    const targetDeploymentIds = Array.from(
+      new Set(
+        (Array.isArray(deploymentIds) ? deploymentIds : [deploymentId])
+          .map((id) => String(id || '').trim())
+          .filter(Boolean)
+      )
+    );
+    if (!userId || targetDeploymentIds.length === 0) {
+      setActionError('User and deployment selection are required.');
       return false;
     }
 
     const nextPermissionCodes = Array.from(
       new Set((Array.isArray(permissionCodes) ? permissionCodes : []).filter(Boolean))
     ).sort();
-    const existingPermissionCodes = Array.isArray(userDeploymentPermissionsMap[userId]?.[deploymentId])
-      ? [...userDeploymentPermissionsMap[userId][deploymentId]]
-      : [];
-    const permissionCodesToAdd = nextPermissionCodes.filter((code) => !existingPermissionCodes.includes(code));
-    const permissionCodesToRemove = existingPermissionCodes.filter((code) => !nextPermissionCodes.includes(code));
+    const deploymentPlans = targetDeploymentIds.map((targetDeploymentId) => {
+      const existingPermissionCodes = Array.isArray(userDeploymentPermissionsMap[userId]?.[targetDeploymentId])
+        ? [...userDeploymentPermissionsMap[userId][targetDeploymentId]]
+        : [];
+      const permissionCodesToAdd = nextPermissionCodes.filter(
+        (code) => !existingPermissionCodes.includes(code)
+      );
+      const permissionCodesToRemove = existingPermissionCodes.filter(
+        (code) => !nextPermissionCodes.includes(code)
+      );
+      return {
+        targetDeploymentId,
+        permissionCodesToAdd,
+        permissionCodesToRemove,
+      };
+    });
 
-    if (permissionCodesToAdd.length === 0 && permissionCodesToRemove.length === 0) {
+    const deploymentIdsNeedingAdd = deploymentPlans
+      .filter((plan) => plan.permissionCodesToAdd.length > 0)
+      .map((plan) => plan.targetDeploymentId);
+    const permissionRemovals = deploymentPlans.flatMap((plan) =>
+      plan.permissionCodesToRemove.map((permissionCode) => ({
+        targetDeploymentId: plan.targetDeploymentId,
+        permissionCode,
+      }))
+    );
+    const deploymentsChangedCount = deploymentPlans.filter(
+      (plan) => plan.permissionCodesToAdd.length > 0 || plan.permissionCodesToRemove.length > 0
+    ).length;
+
+    if (deploymentsChangedCount === 0) {
       setInfo('No deployment permission changes to save.');
       return true;
     }
 
     setIsSubmitting(true);
     try {
-      if (permissionCodesToAdd.length > 0) {
-        const deploymentName = deploymentLabelById[deploymentId] || deploymentId;
+      if (nextPermissionCodes.length > 0 && deploymentIdsNeedingAdd.length > 0) {
+        const resourceNames = {};
+        deploymentIdsNeedingAdd.forEach((targetDeploymentId) => {
+          resourceNames[targetDeploymentId] = deploymentLabelById[targetDeploymentId] || targetDeploymentId;
+        });
         await assignAdminUserResourcePermissionsMutation({
           userId,
           resourceType: DEPLOYMENT_RESOURCE_TYPE,
-          resourceExternalIds: [deploymentId],
-          permissionCodes: permissionCodesToAdd,
-          resourceNames: {
-            [deploymentId]: deploymentName,
-          },
+          resourceExternalIds: deploymentIdsNeedingAdd,
+          permissionCodes: nextPermissionCodes,
+          resourceNames,
         });
       }
-      if (permissionCodesToRemove.length > 0) {
+      if (permissionRemovals.length > 0) {
         await Promise.all(
-          permissionCodesToRemove.map((permissionCode) =>
+          permissionRemovals.map(({ targetDeploymentId, permissionCode }) =>
             removeAdminUserResourcePermissionMutation({
               userId,
-              resourceExternalId: deploymentId,
+              resourceExternalId: targetDeploymentId,
               permissionCode,
               resourceType: DEPLOYMENT_RESOURCE_TYPE,
             })
@@ -1265,7 +1298,11 @@ export default function DashboardPage() {
         );
       }
       const username = users.find((user) => user.id === userId)?.username || 'user';
-      setInfo(`Deployment permissions updated for ${username}.`);
+      if (targetDeploymentIds.length > 1) {
+        setInfo(`Deployment permissions updated for ${username} across ${deploymentsChangedCount} deployment(s).`);
+      } else {
+        setInfo(`Deployment permissions updated for ${username}.`);
+      }
       return true;
     } catch (error) {
       setError(error, 'Unable to update deployment resource permissions for user');

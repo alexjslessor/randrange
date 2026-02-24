@@ -127,6 +127,7 @@ const EMPTY_OAUTH_CLIENT_CREATE_FORM = {
 const DEPLOYMENT_RESOURCE_TYPE = 'deployment';
 const EMAIL_USERNAME_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DEFAULT_DEPLOYMENT_PERMISSION_CODES = ['deployment:read', 'deployment:run'];
+const DEFAULT_USER_DIALOG_DEPLOYMENT_PERMISSION_CODES = ['deployment:run'];
 const DEPLOYMENT_PERMISSION_OPTIONS = [
   { value: 'deployment:read', label: 'deployment:read' },
   { value: 'deployment:run', label: 'deployment:run' },
@@ -2388,7 +2389,7 @@ export default function DashboardPage() {
             deploymentLabelById={deploymentLabelById}
             userDeploymentPermissionsMap={userDeploymentPermissionsMap}
             deploymentPermissionOptions={DEPLOYMENT_PERMISSION_OPTIONS}
-            defaultDeploymentPermissionCodes={DEFAULT_DEPLOYMENT_PERMISSION_CODES}
+            defaultDeploymentPermissionCodes={DEFAULT_USER_DIALOG_DEPLOYMENT_PERMISSION_CODES}
             onSaveDeploymentPermissions={handleSaveUserDeploymentPermissionsForDeployment}
           />
         ) : null}

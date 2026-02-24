@@ -234,8 +234,14 @@ export default function DashboardUserDeploymentPermissionsDialog({
         headerName: 'Permissions',
         flex: 1,
         minWidth: 280,
-        sortable: false,
+        sortable: true,
         filterable: false,
+        valueGetter: (_value, row) => {
+          const permissionCodes = Array.isArray(row?.permission_codes)
+            ? row.permission_codes
+            : [];
+          return permissionCodes.length ? permissionCodes.join(', ') : '';
+        },
         renderCell: (params) => {
           const permissionCodes = Array.isArray(params.row?.permission_codes)
             ? params.row.permission_codes

@@ -1874,7 +1874,8 @@ export default function DashboardPage() {
         <Tabs value={tab} onChange={(_, value) => setTab(value)}>
           {/* <Tab label="Users" value="users" /> */}
           <Tab label="Users" value="matrix" />
-          <Tab label="Groups" value="groups" />
+          {/* NOTE: groups tab */}
+          {/* <Tab label="Groups" value="groups" /> */}
           {/* {canManageDeploymentResourcePermissions ? <Tab label="Permission Matrix" value="matrix" /> : null} */}
           {/* {isSuperuser || isGroupAdmin ? <Tab label="FTE" value="fte" /> : null} */}
           {/* {isSuperuser ? <Tab label="Realms & Clients" value="realms" /> : null} */}

@@ -15,6 +15,8 @@ import DashboardDialogHeroCard from '@/pages/account/components/DashboardDialogH
 import DashboardDialogSectionCard from '@/pages/account/components/DashboardDialogSectionCard';
 import DashboardFormDialog from '@/pages/account/components/DashboardFormDialog';
 
+const EMAIL_USERNAME_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function DashboardCreateUserDialog({
   open,
   onClose,
@@ -28,6 +30,9 @@ export default function DashboardCreateUserDialog({
   groups,
   realms,
 }) {
+  const normalizedUsername = String(newUserForm.username || '').trim();
+  const isUsernameEmail = EMAIL_USERNAME_PATTERN.test(normalizedUsername);
+
   return (
     <DashboardFormDialog
       open={open}
@@ -43,6 +48,7 @@ export default function DashboardCreateUserDialog({
       submitLabel="Create User"
       submittingLabel="Creating..."
       submitIcon={<AddIcon />}
+      submitDisabled={!normalizedUsername || !isUsernameEmail}
     >
       <input
         type="text"
@@ -89,11 +95,19 @@ export default function DashboardCreateUserDialog({
           >
             <TextField
               label="Username"
+              type="email"
               name="create-user-username"
               autoComplete="new-username"
               value={newUserForm.username}
               onChange={(event) =>
                 setNewUserForm((prev) => ({ ...prev, username: event.target.value }))
+              }
+              required
+              error={Boolean(normalizedUsername) && !isUsernameEmail}
+              helperText={
+                Boolean(normalizedUsername) && !isUsernameEmail
+                  ? 'Username must be a valid email address.'
+                  : 'Use an email address for login.'
               }
               fullWidth
               sx={(theme) => theme.customStyles.dashboard.dialog.field}

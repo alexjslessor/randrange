@@ -1103,11 +1103,21 @@ async def create_user(
     payload: dict,
     _: Principal = Depends(require_superuser),
 ):
+    """sets user as  "emailVerified": True same as 
+    login page.
+    code should be refactored to reduce duplication.
+    """
     admin_token = await _kc_admin_token()
+    username = str(payload.get("username") or "").strip()
+    email = str(payload.get("email") or "").strip() or username
     user_body = {
-        "username": payload.get("username"),
-        "email": payload.get("email", ""),
+        "username": username,
+        "email": email,
+        "firstName": str(payload.get("first_name") or "").strip(),
+        "lastName": str(payload.get("last_name") or "").strip(),
         "enabled": True,
+        "emailVerified": True,
+        "requiredActions": [],
         "credentials": [{"type": "password", "value": payload.get("password", ""), "temporary": False}],
     }
     async with httpx.AsyncClient() as client:

@@ -271,7 +271,7 @@ export default function DashboardPage() {
   const [tab, setTab] = useState('matrix');
   const [fteWindow, setFteWindow] = useState('month');
   const [permissionMatrixPageIndex, setPermissionMatrixPageIndex] = useState(0);
-  const [permissionMatrixPageSize, setPermissionMatrixPageSize] = useState(25);
+  const [permissionMatrixPageSize, setPermissionMatrixPageSize] = useState(50);
   const [permissionMatrixSortBy, setPermissionMatrixSortBy] = useState('group_name');
   const [permissionMatrixSortDir, setPermissionMatrixSortDir] = useState('asc');
   const [actionError, setActionError] = useState('');

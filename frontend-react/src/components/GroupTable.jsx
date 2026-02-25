@@ -16,7 +16,7 @@ import {
   flexRender,
 } from '@tanstack/react-table';
 
-const PAGE_SIZES = [10, 25, 50];
+const PAGE_SIZES = [10, 25, 50, 100];
 const SERVER_SORTABLE_COLUMN_IDS = ['group_name', 'username', 'deployment_name'];
 
 const PermissionBadges = ({ values, color }) => (
@@ -104,7 +104,7 @@ export default function GroupTable({
   onCreateGroup,
   disableCreateGroup = false,
   pageIndex = 0,
-  pageSize = 25,
+  pageSize = 50,
   totalRows = 0,
   onPageChange,
   onPageSizeChange,
@@ -312,13 +312,13 @@ export default function GroupTable({
   };
   if (!isServerPagination) {
     tableOptions.getPaginationRowModel = getPaginationRowModel();
-    tableOptions.initialState = { pagination: { pageSize: 25 } };
+    tableOptions.initialState = { pagination: { pageSize: 50 } };
   }
 
   const table = useReactTable(tableOptions);
   const localPagination = table.getState().pagination;
   const currentPageIndex = isServerPagination ? pageIndex : (localPagination?.pageIndex || 0);
-  const currentPageSize = isServerPagination ? pageSize : (localPagination?.pageSize || 25);
+  const currentPageSize = isServerPagination ? pageSize : (localPagination?.pageSize || 50);
   const currentTotalRows = isServerPagination ? totalRows : table.getFilteredRowModel().rows.length;
   const currentPageCount = isServerPagination
     ? Math.max(1, Math.ceil(currentTotalRows / Math.max(currentPageSize, 1)))
